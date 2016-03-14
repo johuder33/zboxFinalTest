@@ -1,0 +1,22 @@
+[
+  {
+    "id": "web.root.home_title",
+    "translation": "Inicio"
+  },
+  {
+    "id": "web.root.singup_info",
+    "translation": "Todas las comunicaciones del equipo en un sólo lugar, con búsquedas y accesible"
+  },
+  {
+    "id": "web.root.singup_title",
+    "translation": "Registrar"
+  },
+  {
+    "id": "web.signup_team_complete.invalid_link.app_error",
+    "translation": "El enlace de registro parece ser inválido"
+  },
+  {
+    "id": "web.signup_team_complete.link_expired.app_error",
+    "translation": "El enlace de registro ha expirado"
+  }
+]

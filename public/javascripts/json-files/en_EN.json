@@ -1,0 +1,16 @@
+{
+  "team_export_tab.download": "descargar",
+  "team_export_tab.export": "Exportar",
+  "team_export_tab.exportTeam": "Exportar tu equipo",
+  "team_export_tab.exporting": " Exportando...",
+  "team_export_tab.ready": " Listo para ",
+  "team_export_tab.unable": " No se pudo exportar: {error}",
+  "team_import_tab.failure": " Fallo al importar: ",
+  "team_import_tab.import": "Importar",
+  "team_import_tab.importSlack": "Importar desde Slack (Beta)",
+  "team_import_tab.importing": " Importando...",
+  "team_import_tab.successful": " Importado con éxito: ",
+  "team_import_tab.summary": "Ver Resumen",
+  "team_member_modal.close": "Cerrar",
+  "team_member_modal.members": "{team} Miembros"
+}

@@ -1,0 +1,15 @@
+extends layout
+
+block content
+  div.container 
+    h1 #{title}
+    form(action="/escribirArchivo" method="post" name="writerFile")
+      label Nombre de tu Archivo
+      br
+      input(type="text" name="fileName")
+      br
+      label Ingresa aqui el contenido de tu archivo
+      br
+      textarea(name="contenido").form-control
+      br
+      input(type="submit" value="Escribir Archivo")

@@ -1,0 +1,9 @@
+exteds layout
+
+block content
+  h1 #{title}
+  div.container.
+    !{JSON.stringify(content)}
+  script.
+    var valor = !{JSON.stringify(content)};
+    console.log(valor);
