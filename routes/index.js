@@ -4,18 +4,22 @@ var router = express.Router();
 var fs = require('fs');
 var multer = require('multer');
 
+// creamos una "clase", Timer para manejar el tiempo que tarda los procesos
+
 function Timer(){
 };
 
+// creamos nuestro primer trace, iniciamos el tiempo
 Timer.prototype.time = function(){
 	this._time = new Date().getTime();
 }
-
+// terminamos de calcular el tiempo, y lo divimos entre 1000 que equivale a un milisegundo , de esta forma obtenemos los segundos
 Timer.prototype.timeEnd = function(formato){
 	var time = this._time;
 	return ((new Date().getTime() - this._time) / 1000) + formato;
 }
 
+// instanciamos la clase Timer
 var timer = new Timer();
 
 // con multer, podemos renombrar nuestros archivos y ademas escoger a donde debemos guardarlo
