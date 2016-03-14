@@ -44,67 +44,81 @@ function getDiff(origin, traduccion){
 }
 
 function leerArchivos(files, res){
+	// contador para determinar cuando termino el each
 	var counter = 0;
+	// objeto que vamos a retornar
 	var objFile = {};
+	// las claves para obtener de mejor manera los archivos
 	var key = [];
 
+	// recorremos ambos archivos
 	files.forEach(function(item){
+		// leemos archivo actual, con readFile nodejs
 		fs.readFile(item.path, 'utf8', function(err, data){
+			// cuando ha leido bien el archivo
 			if(!err){
+				// guardamos el archivo al objeto de retorno y lo convertimos en objeto con JSON.parse
 				objFile[item.fieldname] = JSON.parse(data);
+				// guardamos nuestra clave
 				key.push(item.fieldname);
-				console.log(key, item.fieldname);
+				// incrementamos contador
 				counter += 1;
+				// si el contador es igual a la cantidad de archivos a recorrer terminamos.
 				if(counter === files.length){
+					// buscamos las diferencias entre ambos archivos
 					var diff = getDiff(objFile[key[0]], objFile[key[1]]);
+					// si existe diferencias
 					if(diff){
+						// agregamos las diferencia en el objeto a retornar
 						objFile['diff'] = diff;
 					}
+					// enviamos la respuesta.
 					res.send(objFile);
 				}
 			}else{
-				console.log("Error :", err);
+				// si hubo algo mal, enviamos error.
+				res.status(500).send('Ocurrio un error, por favor intentelo de nuevo');
 			}
 		});
 	});
-
 }
 
-/*function readFile(path, res){
-	fs.readFile(path, 'utf8', function(err, data){
+function writeFileForDownloading(fileName, content, res){
+	// creamos un prefijo del nombre del archivo para evitar sobrescritura de archivos.
+	var prefixName = new Date().getTime()+'_';
+	// guardamos el nombre nuevo del archivo en una variable
+	var _filename = prefixName+fileName;
+	// guardamos la ruta donde crearemos le archivo
+	var path = './public/jsonDownloads/'+_filename;
+	// y creamos la ruta para el front end donde podran descargar los archivos
+	var downloadPath = '/jsonDownloads/'+_filename;
+	// llamamos a writeFile de nodejs para escribir archivos
+	fs.writeFile(path, content, function(err){
+		// si hay error
 		if(err){
-			console.log(err);
+			// respondemos con error
+			res.status(500).send('Ocurrio un error, por favor intente nuevamente.');
 		}else{
-			console.log("Aqui esta tu contenido");
-			console.log(JSON.parse(data));
-			res.render('leer', {content: JSON.parse(data), title : "Contenido del archivo"});
+			// si todo es ok, enviamos la respuestas con un mensaje de respuesta, la ruta y nombre del archivo para manejarlo en el front end
+			res.status(200).send({msg : 'Tu archivo se ha creado con éxito y esta listo para descargarlo.', url : downloadPath, filename : _filename});
 		}
 	});
 }
 
-function writeFile(fileName, content){
-	fs.writeFile('./'+fileName, content, function(err){
-		if(err){
-			console.log('Lo siento pero hubo un error al crear tu archivo', err);
-		}else{
-			console.log('Hemos creado tu archivo con exito');
-		}
-	});
-}*/
-
+// nuestro router para el index de nuestra app
 router.get('/', function(req, res, next){
-	res.render('index', {title : 'Mi titulo'});
+	res.render('index', {title : 'Comparador JSON 2 JSON'});
 });
 
+// nuestro router para subir los archivos del cliente al server
 router.post('/upload', upload.any(), function(req, res, next){
-	console.log(req.files);
 	leerArchivos(req.files, res);
-	//res.send("Hemos recibido tu petición");
 });
 
+// nuestro router para construir nuestro merge y retornarlo si todo esta OK
 router.post('/buildFile', function(req, res, next){
-	console.log(req.body);
-	//res.send("Hemos recibido tu petición");
+	var content = JSON.stringify(req.body, null, 3);
+	writeFileForDownloading('merge.json', content, res);
 });
 
 module.exports = router;

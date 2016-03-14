@@ -1,118 +1,3 @@
-// declaramos nuestra funcion ajax que permitira subir nuesto
-// archivo al servidor.
-
-function uploadFile(files, url, method) {
-			if(arguments.length < 3) return;
-			// creamos el objecto ajax,
-      var xhr = new XMLHttpRequest() || new activeXObject();
-      // creamos el objecto formData para subir archivos mediante ajax
-      var fd = new FormData();
-      
-      xhr.onreadystatechange = function() {
-          if (xhr.readyState == 4 && xhr.status == 200) {
-              console.log(xhr.responseText);
-              console.log(JSON.parse(xhr.responseText));
-          }
-      };
-      // optenemos la cantidad de archivos a subir
-      var archivos = files.length;
-      // los recorremos para procesarlos y añadirlos a formData para poder subir archivos mediante ajax,
-      // aunque existen otros fallbacks mediante un iframes oculto que realiza una peticion, sin embargo
-      // considere mejor poder realizarlo mediante un ajax real.
-      for(; archivos-- > 0;){
-      	fd.append(files[archivos][0].id, files[archivos][0]);
-      }
-
-      // abrimos la peticion, pasandole el metodo, la url, y diciendole que es una paticion asincrona = true. sincrona = false
-      xhr.open(method, uri, true);
-      // enviamos la peticion con los archivos como parametros
-      xhr.send(fd);
-  }
-
-window.onload = function() {
-		var inputs = null;
-		var files = null;
-
-		/*document.getElementById('origin').addEventListener('change', function(e){
-			inputs = document.getElementsByClassName('files');
-			files = checkFiles(inputs);
-
-			if(files){
-				enableUpload();
-			}
-		}, false);
-
-		document.getElementById('compare').addEventListener('change', function(e){
-			inputs = document.getElementsByClassName('files');
-			files = checkFiles(inputs);
-
-			if(files){
-				enableUpload();
-			}
-		}, false);*/
-
-		function checkFiles(inputs){
-			var files = [];
-			var l = inputs.length || 0;
-			if(l){
-				for(; l-- > 0;){
-					if(inputs[l].files.length > 0){
-						inputs[l].files[0]['id'] = inputs[l].id;
-						var path = document.querySelector(inputs[l].getAttribute('data-target'));
-						path.innerHTML = "Tu archivo seleccionado : "+inputs[l].files[0].name;
-						path.style.display = "inline-block";
-						files.push(inputs[l].files);
-					}else{
-						continue;
-					}
-				}
-			}
-
-			if(files.length < 2) return false;
-			return files;
-		}
-
-		function uploading(files, inputs){
-			if(files && files.length > 1){
-				var l = inputs.length;
-				for(; l-- > 0 ;){
-					inputs[l].disabled = "disabled";
-				}
-			}
-		}
-
-		function enableUpload(){
-			//helper.getElement('#uploader');
-			var html = "<div class='text-lg-center'> <button id='uploader' class='btn btn-primary btn-sm'>Comparar Archivos</button> </div>";
-			_alert.createAlert('alert-success open', html);
-		}
-
-		/*addEventListener('click', function(e){
-			var target = e.target || e.srcElement;
-			if(target.id == 'uploader'){
-
-				ajax({
-					method : 'POST',
-					url : '/upload',
-					data : files,
-					isUploadFiles : true,
-					beforeSend : function(xhr, data){
-						btn = helper.getElement('#uploader');
-						btn.disabled = "disabled";
-						btn.innerHTML = "Comparando...";
-					},
-					onsuccess : function(data, xhr){
-						console.log(JSON.parse(data));
-						console.log(xhr);
-						_alert.removeAlert();
-					},
-				});
-
-				//uploadFile(files, '/upload', 'POST');
-			}
-		}, true);*/
-}
-
 function ajax(options){
 	if(helper.isType(options, 'Object') == -1 && !options) return;
 	
@@ -130,7 +15,11 @@ function ajax(options){
 		onerror : function(xhr, data){},
 		onsuccess : function(data, xhr){},
 		oncomplete : function(data, xhr){},
-		abort: function(){ xhr.abort(); },
+		abort: function(){ 
+			this.xhr.abort();
+			this.onerror(this.xhr);
+			throw "Time has expired waiting for a response"
+		},
 		beforeSend : function(xhr){}
 	};
 	options = options || defaults;
@@ -173,24 +62,33 @@ function ajax(options){
       }
   };
 
-  // enviamos la peticion con los archivos como parametros
-  if(options.isUploadFiles) options.data = fd;
-  options.xhr.open(options.method, options.url, options.async);
-  options.xhr.send(options.data);
+  	// enviamos la peticion con los archivos como parametros
+  	if(options.isUploadFiles) options.data = fd;
+  	options.xhr.open(options.method, options.url, options.async);
+  	if(options.isJSON){
+  		options.xhr.setRequestHeader('Content-Type', 'application/json');
+  	}
+  	options.xhr.send(options.data);
 	var timerid = window.setTimeout(function(){ options.abort(); }, options.timeout);
 }
 
 function checkFiles(inputs){
 	var files = [];
+	var allowed = 'application/octet-stream';
 	var l = inputs.length || 0;
 	if(l){
 		for(var i = 0; i < l; i++){
 			if(inputs[i].files.length > 0){
-				inputs[i].files[0]['id'] = inputs[i].id;
-				var path = document.getElementById(inputs[i].getAttribute('data-target'));
-				path.innerHTML = "Tu archivo seleccionado : "+inputs[i].files[0].name;
-				path.style.display = "inline-block";
-				files.push(inputs[i].files);
+				if(inputs[i].files[0].type == allowed || inputs[i].files[0].name.indexOf('.json') > -1){
+					inputs[i].files[0]['id'] = inputs[i].id;
+					var path = document.getElementById(inputs[i].getAttribute('data-target'));
+					path.innerHTML = "Tu archivo seleccionado : "+inputs[i].files[0].name;
+					path.style.display = "inline-block";
+					files.push(inputs[i].files);
+				}else{
+					alert('Por favor verificar que el archivo sea un formato json');
+					throw "Por favor verificar que el archivo sea un formato json";
+				}
 			}else{
 				continue;
 			}
@@ -218,23 +116,6 @@ function makeMerge(file, diff){
 	// si hubo diferencias retornamos las diferencias.
 	return file;
 }
-
-var json = {
-   "nombre": "Johuder",
-   "apellidos": "Gonzalez",
-   "edad": 24,
-   "pais": "Venezuela",
-   "ciudad": "caracas",
-   "Apodo": "Yode",
-   "profesion": "Programador"
-}
-
-var diff = {
-   "ciudad": "caracas",
-   "ciudsad": "Santiago"
-}
-
-console.log(makeMerge(json, diff));
 
 var helper = (function(){
 	return {
@@ -321,23 +202,3 @@ var _alert = (function(){
 	}
 
 })();
-
-var replacer = function(match, pIndent, pKey, pVal, pEnd) {
-  var key = '<span class=json-key>';
-  var val = '<span class=json-value>';
-  var str = '<span class=json-string>';
-  var r = pIndent || '';
-  if (pKey)
-     r = r + key + pKey.replace(/[": ]/g, '') + '</span>: ';
-  if (pVal)
-     r = r + (pVal[0] == '"' ? str : val) + pVal + '</span>';
-  return r + (pEnd || '');
-};
-
-var prettyJSON = function(obj) {
-  var lineofJSON = /^( *)("[\w]+": )?("[^"]*"|[\w.+-]*)?([,[{])?$/mg;
-  return JSON.stringify(obj, null, 3)
-  .replace(/&/g, '&amp;').replace(/\\"/g, '&quot;')
-  .replace(/</g, '&lt;').replace(/>/g, '&gt;')
-  .replace(lineofJSON, replacer);
-}
