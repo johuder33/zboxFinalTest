@@ -4,6 +4,20 @@ var router = express.Router();
 var fs = require('fs');
 var multer = require('multer');
 
+function Timer(){
+};
+
+Timer.prototype.time = function(){
+	this._time = new Date().getTime();
+}
+
+Timer.prototype.timeEnd = function(formato){
+	var time = this._time;
+	return ((new Date().getTime() - this._time) / 1000) + formato;
+}
+
+var timer = new Timer();
+
 // con multer, podemos renombrar nuestros archivos y ademas escoger a donde debemos guardarlo
 var storage = multer.diskStorage({
     destination : function (req, file, cb) {
@@ -44,6 +58,7 @@ function getDiff(origin, traduccion){
 }
 
 function leerArchivos(files, res){
+	timer.time();
 	// contador para determinar cuando termino el each
 	var counter = 0;
 	// objeto que vamos a retornar
@@ -67,13 +82,16 @@ function leerArchivos(files, res){
 				if(counter === files.length){
 					// buscamos las diferencias entre ambos archivos
 					var diff = getDiff(objFile[key[0]], objFile[key[1]]);
+					var msg = 'Ambos archivos son iguales, no hay diferencias';
 					// si existe diferencias
 					if(diff){
 						// agregamos las diferencia en el objeto a retornar
 						objFile['diff'] = diff;
+						msg = 'Existen diferencias, el proceso ha tardado ';
 					}
 					// enviamos la respuesta.
-					res.send(objFile);
+					var total = timer.timeEnd('s');
+					res.status(200).send({files : objFile, time : total, msg : msg});
 				}
 			}else{
 				// si hubo algo mal, enviamos error.
@@ -84,6 +102,7 @@ function leerArchivos(files, res){
 }
 
 function writeFileForDownloading(fileName, content, res){
+	timer.time();
 	// creamos un prefijo del nombre del archivo para evitar sobrescritura de archivos.
 	var prefixName = new Date().getTime()+'_';
 	// guardamos el nombre nuevo del archivo en una variable
@@ -99,8 +118,9 @@ function writeFileForDownloading(fileName, content, res){
 			// respondemos con error
 			res.status(500).send('Ocurrio un error, por favor intente nuevamente.');
 		}else{
+			var total = timer.timeEnd('s');
 			// si todo es ok, enviamos la respuestas con un mensaje de respuesta, la ruta y nombre del archivo para manejarlo en el front end
-			res.status(200).send({msg : 'Tu archivo se ha creado con éxito y esta listo para descargarlo.', url : downloadPath, filename : _filename});
+			res.status(200).send({msg : 'Tu archivo se ha creado con éxito y esta listo para descargarlo. ', url : downloadPath, filename : _filename, time : total});
 		}
 	});
 }

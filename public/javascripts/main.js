@@ -30,8 +30,11 @@ var ButtonComparar = React.createClass({
 				this.setState({ texto : 'Comparando...', disabled : true});
 			}.bind(this),
 			onsuccess : function(data, xhr){
-				console.log(data);
 				data = JSON.parse(data);
+				var time = data.time;
+				var msg = data.msg;
+				data = data.files;
+
 				helper.removeClass(helper.getElement('#notification'), 'alert-success open');
 
 				if(data.diff){
@@ -51,13 +54,30 @@ var ButtonComparar = React.createClass({
 					);
 
 					helper.addClass(helper.getElement('.code-place'), 'diff');
+
+					helper.removeClass(helper.getElement('#notification'));
+					
+					ReactDOM.render(
+						<Notification strong="Perfecto" message={msg+time}/>,
+						helper.getElement('#notification')
+					)
+
+					helper.addClass(helper.getElement('#notification'), 'alert notification alert-success open');
+
+					window.setTimeout(function(){
+						helper.removeClass(helper.getElement('#notification'), 'alert-success open');
+					}, 5000);
 				}else{
 					helper.removeClass(helper.getElement('#notification'));
 					ReactDOM.render(
-						<Notification strong="Perfecto" message="Ambos archivos tienen las mismas Claves"/>,
+						<Notification strong="Perfecto" message={msg+time}/>,
 						helper.getElement('#notification')
 					)
 					helper.addClass(helper.getElement('#notification'), 'alert notification alert-info open');
+
+					window.setTimeout(function(){
+						helper.removeClass(helper.getElement('#notification'), 'alert-info open');
+					}, 5000);
 				}
 
 			},
@@ -130,10 +150,11 @@ var CodeDiff = React.createClass({
 
 						this.setState({ btnDownloadText : 'Descargar archivo merge', isReadyDownload : true, url : data.url, filename : data.filename });
 
-						helper.addClass(helper.getElement('#notification'), 'alert-success open');
+						helper.removeClass(helper.getElement('#notification'));
+						helper.addClass(helper.getElement('#notification'), 'alert notification alert-success open');
 						
 						ReactDOM.render(
-							<Notification strong="Genial" message={data.msg}/>,
+							<Notification strong="Genial" message={data.msg+data.time}/>,
 							helper.getElement('#notification')
 						);
 
