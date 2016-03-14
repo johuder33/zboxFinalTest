@@ -5,3 +5,12 @@ Gracias por la oportunidad, ha sido excelente la prueba aunque no he podido term
 Puede por supuesto ver el código y estaré dispuesto a responder cualquier pregunta en caso que las tengan.
 
 Que tengas un excelente día. Muchas Gracias
+
+NOTA : Solo trabajar con formato pure JSON, es decir bajo este formato : 
+
+{
+
+  "clave" : "valor",
+  "key" : "value"
+
+}
